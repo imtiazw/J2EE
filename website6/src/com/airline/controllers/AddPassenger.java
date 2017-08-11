@@ -1,17 +1,22 @@
 package com.airline.controllers;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import javax.servlet.RequestDispatcher;
+import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
 import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+
+import com.airline.models.Gender;
+import com.airline.models.Passenger;
 
 /**
  * Servlet implementation class AddPassenger
@@ -47,6 +52,7 @@ public class AddPassenger extends HttpServlet {
 			throws ServletException, IOException {
 		// TODO Auto-generated method stub
 		request.setAttribute("errors", false);
+		Passenger passenger = new Passenger();
 		String firstName = request.getParameter("first-name");
 		if (firstName.length() == 0) {
 			System.out.println("first name is not present");
@@ -54,7 +60,7 @@ public class AddPassenger extends HttpServlet {
 			request.setAttribute("firstname_error", true);
 		}
 		else {
-		System.out.println(firstName);
+			passenger.setFirstName(firstName);
 		}
 		String lastName = request.getParameter("last-name");
 		if (lastName.length() == 0) {
@@ -63,7 +69,7 @@ public class AddPassenger extends HttpServlet {
 			request.setAttribute("lastname_error", true);
 		}
 		else{
-			System.out.println(lastName);
+			passenger.setLastName(lastName);
 		}
 		String dob_str = request.getParameter("dob");
 		String pattern = "^\\d{1,2}\\/\\d{1,2}\\/\\d{4}$";
@@ -77,17 +83,23 @@ public class AddPassenger extends HttpServlet {
 			Calendar calendar = Calendar.getInstance();
 			calendar.set(Integer.parseInt(year), Integer.parseInt(month), Integer.parseInt(day));
 			Date date = calendar.getTime();
-			System.out.println(date);
+			passenger.setDate(date);
 		} else {
 			System.out.println("date is not present");
 			request.setAttribute("errors", true);
 			request.setAttribute("date_error", true);
 		}
 		String gender = request.getParameter("gender");
-		System.out.println(gender);
+		passenger.setGender(Gender.valueOf(gender));
 		if((Boolean)request.getAttribute("errors")) {
 			RequestDispatcher rd = request.getRequestDispatcher("WEB-INF/views/add_passenger.jsp");
 			rd.forward(request, response);
+		}else {
+			ServletContext sc = this.getServletContext();
+			ArrayList<Passenger> passengerList = (ArrayList<Passenger>) sc.getAttribute("passengers");
+			passengerList.add(passenger);
+			sc.setAttribute("passengers", passengerList);
+			response.sendRedirect("");
 		}
 	}
 
